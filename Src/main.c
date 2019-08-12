@@ -51,7 +51,7 @@ UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-uint8_t StartMessagge[] = "\n\r Input Packet Length: ";
+uint8_t StartMessagge[] = "\r\n Uart Ready: \r\n ";
 uint8_t aPacketLength[RXBUFFERSIZE];
 uint16_t MessageSize[SizeData];
 uint8_t return_value;
@@ -125,23 +125,6 @@ else
 {
 	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
 }
-HAL_UART_Receive_IT(&huart1,(uint8_t *)aPacketLength,RXBUFFERSIZE);
-while (HAL_UART_GetState(&huart1) != HAL_UART_STATE_READY) {
-// waiting for input
-}
-HAL_UART_Receive_IT(&huart2,(uint8_t *)aPacketLength,RXBUFFERSIZE);
-while (HAL_UART_GetState(&huart2) != HAL_UART_STATE_READY) {
-// waiting for input
-}
-if (HAL_UART_GetState(&huart1) == HAL_UART_STATE_READY || HAL_UART_GetState(&huart2) == HAL_UART_STATE_READY )
-{
-
-}
-else
-{
-
-}
-packet_length = aPacketLength[0] - '0';
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -149,37 +132,18 @@ packet_length = aPacketLength[0] - '0';
   while (1)
   {
     /* USER CODE END WHILE */
-	  return_value = 	HAL_UART_GetState(&huart1);
-	  if(return_value == HAL_UART_STATE_READY)
-	  {
-		  return_value = HAL_UART_Receive_IT(&huart1, aRxBuffer, RXBUFFERSIZE);
-		  if (return_value == HAL_OK)
-		  {
-			  //Success
-		  }
-		  else
-		  {
-			  //Failed
-		  }
-	  }
-	  else if (HAL_UART_GetState(&huart2) == HAL_UART_STATE_READY)
-	  {
+	  if (HAL_UART_GetState(&huart1) == HAL_UART_STATE_READY)
+	  	  {
+	        HAL_UART_Receive_IT(&huart1, aRxBuffer, RXBUFFERSIZE);
+	      }
 
-		 		  return_value = HAL_UART_Receive_IT(&huart2, aRxBuffer, RXBUFFERSIZE);
-		 		  if (return_value == HAL_OK)
-		 		  {
-		 			  //Success
-		 		  }
-		 		  else
-		 		  {
-		 			  //Failed
-		 		  }
-	  }
-    /* USER CODE BEGIN 3 */
-  }
+	      if (HAL_UART_GetState(&huart2) == HAL_UART_STATE_READY)
+	  	  {
+	        HAL_UART_Receive_IT(&huart2, aRxBuffer, RXBUFFERSIZE);
+	  	  }
   /* USER CODE END 3 */
 }
-
+}
 /**
   * @brief System Clock Configuration
   * @retval None
