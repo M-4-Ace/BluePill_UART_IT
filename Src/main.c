@@ -34,7 +34,7 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define TXSTARTMESSAGESIZE                   (COUNTOF(StartMessagge) - 1)
-#define RXBUFFERSIZE							(COUNTOF(aPacketLength) - 1)
+#define RXBUFFERSIZE							1
 #define COUNTOF(__BUFFER__)   (sizeof(__BUFFER__) / sizeof(*(__BUFFER__)))
 
 #define SizeData				10
@@ -51,11 +51,11 @@ UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-uint8_t StartMessagge[] = "\n\r Input Packet Lenght: ";
-uint8_t aPacketLength[2];
+uint8_t StartMessagge[] = "\n\r Input Packet Length: ";
+uint8_t aPacketLength[RXBUFFERSIZE];
 uint16_t MessageSize[SizeData];
 uint8_t return_value;
-uint8_t packet_lenght;
+uint8_t packet_length;
 uint8_t aRxBuffer[RXBUFFERSIZE];
 /* USER CODE END PV */
 
@@ -126,8 +126,22 @@ else
 	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
 }
 HAL_UART_Receive_IT(&huart1,(uint8_t *)aPacketLength,RXBUFFERSIZE);
+while (HAL_UART_GetState(&huart1) != HAL_UART_STATE_READY) {
+// waiting for input
+}
 HAL_UART_Receive_IT(&huart2,(uint8_t *)aPacketLength,RXBUFFERSIZE);
+while (HAL_UART_GetState(&huart2) != HAL_UART_STATE_READY) {
+// waiting for input
+}
+if (HAL_UART_GetState(&huart1) == HAL_UART_STATE_READY || HAL_UART_GetState(&huart2) == HAL_UART_STATE_READY )
+{
 
+}
+else
+{
+
+}
+packet_length = aPacketLength[0] - '0';
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -138,8 +152,7 @@ HAL_UART_Receive_IT(&huart2,(uint8_t *)aPacketLength,RXBUFFERSIZE);
 	  return_value = 	HAL_UART_GetState(&huart1);
 	  if(return_value == HAL_UART_STATE_READY)
 	  {
-		  packet_lenght = aPacketLength[0] - '0';
-		  return_value = HAL_UART_Receive_IT(&huart1, aRxBuffer, packet_lenght);
+		  return_value = HAL_UART_Receive_IT(&huart1, aRxBuffer, RXBUFFERSIZE);
 		  if (return_value == HAL_OK)
 		  {
 			  //Success
@@ -151,8 +164,8 @@ HAL_UART_Receive_IT(&huart2,(uint8_t *)aPacketLength,RXBUFFERSIZE);
 	  }
 	  else if (HAL_UART_GetState(&huart2) == HAL_UART_STATE_READY)
 	  {
-		  packet_lenght = aPacketLength[0] - '0';
-		 		  return_value = HAL_UART_Receive_IT(&huart2, aRxBuffer, packet_lenght);
+
+		 		  return_value = HAL_UART_Receive_IT(&huart2, aRxBuffer, RXBUFFERSIZE);
 		 		  if (return_value == HAL_OK)
 		 		  {
 		 			  //Success
@@ -299,9 +312,14 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *UartHandle)
 }
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *UartHandle)
 {
-	HAL_UART_Transmit_IT(&huart2,aRxBuffer,packet_lenght);
-	HAL_UART_Transmit_IT(&huart1,aRxBuffer,packet_lenght);
-
+	if (UartHandle==&huart1)
+	{
+	HAL_UART_Transmit_IT(&huart2,aRxBuffer,RXBUFFERSIZE);
+	}
+	if (UartHandle==&huart2)
+	{
+	HAL_UART_Transmit_IT(&huart1,aRxBuffer,RXBUFFERSIZE);
+	}
 }
 /* USER CODE END 4 */
 
